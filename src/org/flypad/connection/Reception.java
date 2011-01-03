@@ -7,78 +7,46 @@ package org.flypad.connection;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import javax.bluetooth.RemoteDevice;
 import javax.microedition.io.StreamConnection;
-import javax.microedition.io.StreamConnectionNotifier;
 
 /**
  *
  * @author albus
  */
-public class Reception
-        extends Thread {
-    
-    private final StreamConnectionNotifier server;
-    private StreamConnection client;
-    private RemoteDevice remote;
-    
-    private volatile boolean alive = true;
+class Reception extends SimpleThread {
 
-    public Reception(final StreamConnectionNotifier server) {
-        this.server = server;
+    private final PhysicalConnection root;
+    private final StreamConnection connection;
+    private final DataListener dataListner;
+    
+    public Reception(
+            final PhysicalConnection root,
+            final StreamConnection connection,
+            final DataListener dataListener
+            ) {
+        this.root = root;
+        this.connection = connection;
+        this.dataListner = dataListener;
     }
 
     public final void run() {
         try {
-            /*
-             * Await client connection
-             */
-            connect();
-
-            /*
-             * Start receiving data
-             */
             int size;
             byte[] buffer;
-            long t;
-            DataInputStream receive = client.openDataInputStream();
+            DataInputStream in = connection.openDataInputStream();
+            
             try {
                 while (alive) {
-                    size = receive.readShort();
-                    t = System.currentTimeMillis();
+                    size = in.readShort();
                     buffer = new byte[size];
-                    receive.readFully(buffer);
-                    t = System.currentTimeMillis() - t;
-                    System.out.println("[Recieved]: "
-                            + new String(buffer)
-                            + " (" + t + ")");
+                    in.readFully(buffer);
+                    dataListner.receive(buffer);
                 }
             } finally {
-                System.out.println("Closing connection...");
-                receive.close();
+                in.close();
             }
         } catch (IOException e){
-            e.printStackTrace();
+            root.terminated();
         }
-    }
-
-    private void connect() throws IOException {
-        /*
-         * Accept a new client connection
-         */
-        System.out.println("Awaiting client connection...");
-        client = server.acceptAndOpen();
-        
-        /*
-         * Get a handle on the connection
-         */
-        remote = RemoteDevice.getRemoteDevice(client);
-
-        System.out.println("New client connection to "
-                + remote.getFriendlyName(false));
-    }
-
-    public final void kill() {
-        alive = false;
     }
 }

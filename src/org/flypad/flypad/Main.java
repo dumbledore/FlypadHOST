@@ -6,7 +6,9 @@
 package org.flypad.flypad;
 
 import java.io.IOException;
-import org.flypad.connection.Server;
+import org.flypad.connection.Client;
+import org.flypad.connection.Connection;
+import org.flypad.util.log.DataLogger;
 
 /**
  *
@@ -20,8 +22,9 @@ public class Main {
     public static void main(String[] args) {
         // TODO code application logic here
         try {
-            final Server server = new Server();
-            server.connect();
+            final DataLogger logger = new DataLogger();
+//            final Connection connection = new Client(logger, logger);
+            final Connection connection = new Client(logger, logger);
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage());
         }
