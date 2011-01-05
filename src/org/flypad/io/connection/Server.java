@@ -3,8 +3,9 @@
  * and open the template in the editor.
  */
 
-package org.flypad.connection;
+package org.flypad.io.connection;
 
+import org.flypad.util.SimpleThread;
 import java.io.IOException;
 import javax.bluetooth.DiscoveryAgent;
 import javax.bluetooth.LocalDevice;
@@ -27,7 +28,7 @@ public class Server extends ManagedConnection {
             + "name=" + serviceName;
 
     private final StreamConnectionNotifier connectionNotifier;
-    private final ClientManager discoverer = new ClientManager(this);
+    private final ClientDiscoverer discoverer = new ClientDiscoverer(this);
 
     public Server(
             final DataListener dataListener,
@@ -60,16 +61,20 @@ public class Server extends ManagedConnection {
         logger.log("Connection terminated.");
     }
 
-    class ClientManager extends Thread {
-        private final Server server;
-        private volatile boolean alive = true;
+    public final void close() {
+        discoverer.kill();
+        super.close();
+    }
 
-        ClientManager(final Server server) {
+    class ClientDiscoverer extends SimpleThread {
+        private final Server server;
+
+        ClientDiscoverer(final Server server) {
             this.server = server;
         }
 
         public void run() {
-            while (alive) {
+            while (isWorking()) {
                 try {
                     /*
                      * Accept a new client connection
@@ -84,7 +89,7 @@ public class Server extends ManagedConnection {
                     logger.log("New client connection to "
                             + remote.getFriendlyName(false));
 
-                    connection = new PhysicalConnection(server, client, server);
+                    connection = new TwoWayConnection(server, client, server);
                 } catch (IOException e) {
                     logger.log(e.toString());
                 }

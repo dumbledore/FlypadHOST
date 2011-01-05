@@ -3,8 +3,9 @@
  * and open the template in the editor.
  */
 
-package org.flypad.connection;
+package org.flypad.io.connection;
 
+import org.flypad.util.SimpleThread;
 import java.io.DataInputStream;
 import java.io.IOException;
 import javax.microedition.io.StreamConnection;
@@ -13,19 +14,16 @@ import javax.microedition.io.StreamConnection;
  *
  * @author albus
  */
-class Reception extends SimpleThread {
+class Reception extends OneWayConnection {
 
-    private final PhysicalConnection root;
-    private final StreamConnection connection;
     private final DataListener dataListner;
     
     public Reception(
-            final PhysicalConnection root,
+            final TwoWayConnection root,
             final StreamConnection connection,
             final DataListener dataListener
             ) {
-        this.root = root;
-        this.connection = connection;
+        super(root, connection);
         this.dataListner = dataListener;
     }
 
@@ -36,7 +34,7 @@ class Reception extends SimpleThread {
             DataInputStream in = connection.openDataInputStream();
             
             try {
-                while (alive) {
+                while (isWorking()) {
                     size = in.readShort();
                     buffer = new byte[size];
                     in.readFully(buffer);

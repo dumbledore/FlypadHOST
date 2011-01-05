@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package org.flypad.connection;
+package org.flypad.io.connection;
 
 /**
  *
@@ -11,5 +11,5 @@ package org.flypad.connection;
  */
 public interface Connection extends DataListener {
     public void send(byte[] data);
-    public void terminated();
+    public void close();
 }

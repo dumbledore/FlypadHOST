@@ -3,16 +3,20 @@
  * and open the template in the editor.
  */
 
-package org.flypad.connection;
+package org.flypad.util;
 
 /**
  *
  * @author albus
  */
 public abstract class SimpleThread extends Thread {
-    protected volatile boolean alive = true;
+    private volatile boolean alive = true;
 
-    public final void kill() {
+    public void kill() {
         alive = false;
+    }
+
+    public boolean isWorking() {
+        return alive;
     }
 }

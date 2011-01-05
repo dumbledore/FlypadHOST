@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package org.flypad.connection;
+package org.flypad.io.connection;
 
 import javax.microedition.io.StreamConnection;
 
@@ -11,13 +11,14 @@ import javax.microedition.io.StreamConnection;
  *
  * @author albus
  */
-class PhysicalConnection implements Connection {
+class TwoWayConnection
+        implements Connection, TerminationListener {
     private final ManagedConnection managedConnection;
     private final Reception reception;
     private final Transmission transmission;
     private final DataListener dataListener;
 
-    public PhysicalConnection(
+    public TwoWayConnection(
             final ManagedConnection managedConnection,
             final StreamConnection connection,
             final DataListener dataListener) {
@@ -44,5 +45,10 @@ class PhysicalConnection implements Connection {
         reception.kill();
         transmission.kill();
         managedConnection.terminated();
+    }
+
+    public final void close() {
+        reception.kill();
+        transmission.kill();
     }
 }

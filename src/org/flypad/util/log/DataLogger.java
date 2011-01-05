@@ -5,7 +5,7 @@
 
 package org.flypad.util.log;
 
-import org.flypad.connection.DataListener;
+import org.flypad.io.connection.DataListener;
 
 /**
  *

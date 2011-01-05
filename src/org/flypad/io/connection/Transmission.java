@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package org.flypad.connection;
+package org.flypad.io.connection;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -14,16 +14,13 @@ import org.flypad.util.DataQueue;
  *
  * @author albus
  */
-class Transmission extends SimpleThread {
-    private final PhysicalConnection physicalConnection;
-    private StreamConnection connection;
+class Transmission extends OneWayConnection {
     private DataQueue queue = new DataQueue(128);
 
     public Transmission(
-            final PhysicalConnection physicalConnection,
+            final TwoWayConnection physicalConnection,
             final StreamConnection connection) {
-        this.physicalConnection = physicalConnection;
-        this.connection = connection;
+        super(physicalConnection, connection);
     }
 
     public final void run() {
@@ -31,7 +28,7 @@ class Transmission extends SimpleThread {
             DataOutputStream out = connection.openDataOutputStream();
 
             try {
-                while(alive) {
+                while(isWorking()) {
                     if (!queue.isEmpty()) {
                         byte[] data = queue.dequeue();
                         if (data != null) {
@@ -49,7 +46,7 @@ class Transmission extends SimpleThread {
                 out.close();
             }
         } catch (IOException e) {
-            physicalConnection.terminated();
+            root.terminated();
         }
     }
 
